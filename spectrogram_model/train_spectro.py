@@ -2,6 +2,8 @@
 # with *insert architecture/model* name
 # Run using the following:
 #   python train_spectro.py -data <path> -l <trained_model>
+#
+# python train_spectro.py -data "F:\Datasets\TimbreTransfer"
 
 import torch
 import torch.nn as nn
@@ -12,7 +14,7 @@ from data import PianoGuitar_SS
 
 # Hyperparams (define hyperparams)
 epochs = 20
-hyperparam_list = []
+hyperparam_list = ['epochs']
 hyperparams = {name:eval(name) for name in hyperparam_list}
 
 # Setup GPU stuff
@@ -26,8 +28,8 @@ parser.add_argument('-l', dest='load', type=str, required=False, help='Path to t
 args = parser.parse_args()
 
 # Load datasets
-dataset_train = PianoGuitar_SS(args.data, 'train')
-dataset_valid= PianoGuitar_SS(args.data, 'valid')
+dataset_train = PianoGuitar_SS(args.data, 'train', device)
+dataset_valid= PianoGuitar_SS(args.data, 'valid', device)
 
 # Log information about dataset and training
 print('List of Hyperparams:')
@@ -79,35 +81,32 @@ for epoch in range(epochs):
     print('Epoch:', epoch)
 
     # Training loop
-    if not args.test:
-        model.train()
-        for samples_piano, samples_guitar in dataloader_train:
+    model.train()
+    for samples_piano, samples_guitar in dataloader_train:
+
+        # Reset gradient
+        optimizer.zero_grad()
+
+        # Forward pass
+        _ = model(images)
+
+        # Calculate loss
+        loss = 1
             
-            samples_piano, samples_guitar = samples_piano.to(device), samples_guitar.to(device)
+        # Calculate accuracy
 
-            # Reset gradient
-            optimizer.zero_grad()
+        # Backward pass (update)
+        loss.backward()
+        optimizer.step()
 
-            # Forward pass
-            _ = model(images)
+        # Update statistics
+        train_loss += loss.item()
+        total += 16 #batch size
 
-            # Calculate loss
-            loss = 1
-            
-            # Calculate accuracy
-
-            # Backward pass (update)
-            loss.backward()
-            optimizer.step()
-
-            # Update statistics
-            train_loss += loss.item()
-            total += 16 #batch size
-
-        # Show current statistics on training
-        print('Train Loss:',train_loss / len(dataloader_train))
-        print('Train Class Accuracy:',(num_corr / total).item())
-        print('Train Attribute Accuracy:',(attr_acc / total))
+    # Show current statistics on training
+    print('Train Loss:',train_loss / len(dataloader_train))
+    print('Train Class Accuracy:',(num_corr / total).item())
+    print('Train Attribute Accuracy:',(attr_acc / total))
 
     # Reset statistics
     test_loss = 0
@@ -115,7 +114,7 @@ for epoch in range(epochs):
     attr_acc = 0
     total = 0
 
-    # Validation/test (if eval mode) loop
+    # Validation loop
     model.eval()
     for samples_piano, samples_guitar in dataloader_valid:
 
