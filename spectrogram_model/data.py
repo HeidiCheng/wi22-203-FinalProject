@@ -88,7 +88,7 @@ class PianoGuitar_SS(Dataset):
             #print(guitar_spectrogram.shape)
 
             # Save spectrograms
-            self.samples.append((piano_spectrogram, guitar_spectrogram))
+            self.samples.append((np.array([piano_spectrogram]), np.array([guitar_spectrogram])))
 
             # Track data loading progress
             if len(self.samples) % 1000 == 0:

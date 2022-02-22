@@ -8,13 +8,26 @@
 import torch
 import torch.nn as nn
 import argparse
+import model
+import numpy as np
+import random
+import librosa
+import soundfile as sf
 
 from torch.utils.data import DataLoader
 from data import PianoGuitar_SS
 
+# Set seed for reproducibility
+torch.manual_seed(0)
+random.seed(0)
+np.random.seed(0)
+
 # Hyperparams (define hyperparams)
-epochs = 20
-hyperparam_list = ['epochs']
+epochs = 100
+learning_rate = 1e-4
+batch_size = 10
+sample_rate = 22050
+hyperparam_list = ['epochs', 'learning_rate', 'batch_size', 'sample_rate']
 hyperparams = {name:eval(name) for name in hyperparam_list}
 
 # Setup GPU stuff
@@ -39,13 +52,13 @@ print('Num training samples:', len(dataset_train))
 print('Num validation samples:', len(dataset_valid))
 
 # Create dataloaders
-dataloader_train = DataLoader(dataset_train, shuffle=True)
-dataloader_valid = DataLoader(dataset_valid, shuffle=True)
+dataloader_train = DataLoader(dataset_train, shuffle=True, batch_size=batch_size)
+dataloader_valid = DataLoader(dataset_valid, shuffle=True, batch_size=batch_size)
 
 # Create model
-model = 1 # Model definition
+model = model.SpectroNet()
 model.to(device)
-optimizer = 1 # Optimizer definition
+optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 model_num = 1
 
 # Load previous model if flag used
@@ -63,12 +76,14 @@ if args.load:
 def save_model():
 
     # Save model
-    root_model_path = 'models/latest_model_' + str(model_num) + '.pt'
+    root_model_path = 'trained_models/latest_model_' + str(model_num) + '.pt'
     model_dict = model.state_dict()
     state_dict = {'model': model_dict, 'optimizer': optimizer.state_dict()}
     torch.save(state_dict, root_model_path)
 
     print('Saved model')
+
+mse_loss = nn.MSELoss()
 
 # Go through training data
 for epoch in range(epochs):
@@ -84,32 +99,44 @@ for epoch in range(epochs):
     model.train()
     for samples_piano, samples_guitar in dataloader_train:
 
+        #print('Training shapes')
+        #print(samples_piano.shape, samples_guitar.shape)
+
         # Reset gradient
         optimizer.zero_grad()
 
         # Forward pass
-        _ = model(images)
+        piano_transformed = model(samples_piano)
+
+        # Pad zeros to tensor to match shape of target since
+        # dimensionality (height/width) was messed up slightly with convs
+        zeros1 = torch.zeros((batch_size, 1, piano_transformed.shape[2],
+                             samples_piano.shape[3] - piano_transformed.shape[3]), device=device)
+        zeros2 = torch.zeros((batch_size, 1, samples_piano.shape[2] - piano_transformed.shape[2],
+                             samples_piano.shape[3]), device=device)
+        piano_transformed_shaped = torch.cat((piano_transformed, zeros1), dim=3)
+        piano_transformed_shaped = torch.cat((piano_transformed_shaped, zeros2), dim=2)
 
         # Calculate loss
-        loss = 1
+        loss = mse_loss(piano_transformed_shaped, samples_guitar)
             
         # Calculate accuracy
-
+        
         # Backward pass (update)
         loss.backward()
         optimizer.step()
 
         # Update statistics
         train_loss += loss.item()
-        total += 16 #batch size
+        total += 10 #batch size
 
     # Show current statistics on training
-    print('Train Loss:',train_loss / len(dataloader_train))
-    print('Train Class Accuracy:',(num_corr / total).item())
-    print('Train Attribute Accuracy:',(attr_acc / total))
+    print('Train Loss:',train_loss / (len(dataloader_train) / batch_size) )
+    #print('Train Class Accuracy:',(num_corr / total).item())
+    #print('Train Attribute Accuracy:',(attr_acc / total))
 
     # Reset statistics
-    test_loss = 0
+    valid_loss = 0
     num_corr = 0
     attr_acc = 0
     total = 0
@@ -120,25 +147,44 @@ for epoch in range(epochs):
 
         with torch.no_grad():
 
-            samples_piano, samples_guitar = samples_piano.to(device), samples_guitar.to(device)
-
             # Forward pass
-            _ = model(samples_piano)
+            piano_transformed = model(samples_piano)
+
+            # Pad zeros to tensor to match shape of target since
+            # dimensionality (height/width) was messed up slightly with convs
+            zeros1 = torch.zeros((batch_size, 1, piano_transformed.shape[2],
+                                samples_piano.shape[3] - piano_transformed.shape[3]), device=device)
+            zeros2 = torch.zeros((batch_size, 1, samples_piano.shape[2] - piano_transformed.shape[2],
+                                samples_piano.shape[3]), device=device)
+            piano_transformed_shaped = torch.cat((piano_transformed, zeros1), dim=3)
+            piano_transformed_shaped = torch.cat((piano_transformed_shaped, zeros2), dim=2)
 
             # Calculate loss
-            loss = 1
-
+            loss = mse_loss(piano_transformed_shaped, samples_guitar)
+                
             # Calculate accuracy
 
             # Update statistics
-            test_loss += loss.item()
-            total += 16 # batch size
+            valid_loss += loss.item()
+            total += 10 #batch size
+
+    # Write a sample output
+    piano_transformed_shaped = piano_transformed_shaped.cpu().numpy()
+    samples_piano = samples_piano.cpu().numpy()
+    samples_guitar = samples_guitar.cpu().numpy()
+    audio_reconstructed_input =librosa.griffinlim(samples_piano[0,0])
+    audio_reconstructed_model = librosa.griffinlim(piano_transformed_shaped[0,0])
+    audio_reconstructed_tgt = librosa.griffinlim(samples_guitar[0,0])
+    sf.write('input.wav', audio_reconstructed_input, sample_rate, 'PCM_24')
+    sf.write('pred.wav', audio_reconstructed_model, sample_rate, 'PCM_24')
+    sf.write('tgt.wav', audio_reconstructed_tgt, sample_rate, 'PCM_24')
 
     # Show statistics on test set
-    print('Test Loss:',test_loss / len(dataloader_valid))
-    print('Test Class Accuracy:',(num_corr / total).item())
-    print('Test Attribute Accuracy:',(attr_acc / total))
+    print('Valid Loss:',valid_loss / (len(dataloader_valid) / 10))
+    #print('Valid Class Accuracy:',(num_corr / total).item())
+    #print('Valid Attribute Accuracy:',(attr_acc / total))
 
-    if not args.test:
+    #if not args.test:
+    if (epoch+1) % 10 == 0:
         save_model()
         model_num += 1
