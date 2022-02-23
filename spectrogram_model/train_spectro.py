@@ -83,7 +83,9 @@ def save_model():
 
     print('Saved model')
 
-mse_loss = nn.MSELoss()
+# Define loss functions used
+#mse_loss = nn.MSELoss()
+mae_loss = nn.L1Loss()
 
 # Go through training data
 for epoch in range(epochs):
@@ -118,8 +120,9 @@ for epoch in range(epochs):
         piano_transformed_shaped = torch.cat((piano_transformed_shaped, zeros2), dim=2)
 
         # Calculate loss
-        loss = mse_loss(piano_transformed_shaped, samples_guitar)
-            
+        #loss = mse_loss(piano_transformed_shaped, samples_guitar)
+        loss = mae_loss(piano_transformed_shaped, samples_guitar)   
+        
         # Calculate accuracy
         
         # Backward pass (update)
@@ -160,8 +163,9 @@ for epoch in range(epochs):
             piano_transformed_shaped = torch.cat((piano_transformed_shaped, zeros2), dim=2)
 
             # Calculate loss
-            loss = mse_loss(piano_transformed_shaped, samples_guitar)
-                
+            #loss = mse_loss(piano_transformed_shaped, samples_guitar)
+            loss = mae_loss(piano_transformed_shaped, samples_guitar)   
+
             # Calculate accuracy
 
             # Update statistics
@@ -180,7 +184,7 @@ for epoch in range(epochs):
     sf.write('tgt.wav', audio_reconstructed_tgt, sample_rate, 'PCM_24')
 
     # Show statistics on test set
-    print('Valid Loss:',valid_loss / (len(dataloader_valid) / 10))
+    print('Valid Loss:',valid_loss / (len(dataloader_valid) / batch_size))
     #print('Valid Class Accuracy:',(num_corr / total).item())
     #print('Valid Attribute Accuracy:',(attr_acc / total))
 
