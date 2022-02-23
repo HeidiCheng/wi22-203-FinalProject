@@ -85,8 +85,6 @@ class PianoGuitar_SS(Dataset):
             with open(guitar_fpath, 'rb') as f:
                 guitar_spectrogram = np.load(f) # ** 2
 
-            #print(guitar_spectrogram.shape)
-
             # Save spectrograms
             self.samples.append((np.array([piano_spectrogram]), np.array([guitar_spectrogram])))
 
@@ -109,52 +107,7 @@ class PianoGuitar_SS(Dataset):
             #librosa.display.specshow(log_spectrogram, sr=sr, hop_length=HOP_SIZE,x_axis='time',y_axis='log')
             #plt.colorbar(format='%+2.f"')
             #plt.show()
-            
-            '''
-            fs_rate, signal = wavfile.read(piano_fpath)
-            print(piano_fpath)
-            print('Sampling rate:', fs_rate)
-            print('Signal shape:', signal.shape)
-            l_audio = len(signal.shape)
-            print ("Channels", l_audio)
-            if l_audio == 2:   # Two channel, average them
-                signal = signal.sum(axis=1) / 2
-                print('Signal shape averaged:', signal.shape)
-                print('Range of signal:', np.max(signal), np.min(signal), np.mean(signal))
-            N = signal.shape[0]
-            print ("Number of samplings", N)
-            secs = N / float(fs_rate)
-            print ("Sample Length (seconds)", secs)
-            Ts = 1.0/fs_rate # sampling interval in time
-            print ("Timestep between samples Ts", Ts)
-            t = scipy.arange(0, secs, Ts) # time vector as scipy arange field / numpy.ndarray
-            FFT = abs(fft(signal))
-            print('FFT Shape:', FFT.shape)
-            FFT_side = FFT[range(N//2)] # one side FFT range
-            freqs = scipy.fftpack.fftfreq(signal.size, t[1]-t[0])
-            fft_freqs = np.array(freqs)
-            freqs_side = freqs[range(N//2)] # one side frequency range
-            fft_freqs_side = np.array(freqs_side)
-            plt.subplot(311)
-            p1 = plt.plot(t, signal, "g") # plotting the signal
-            plt.xlabel('Time')
-            plt.ylabel('Amplitude')
-            plt.subplot(312)
-            p2 = plt.plot(freqs, FFT, "r") # plotting the complete fft spectrum
-            plt.xlabel('Frequency (Hz)')
-            plt.ylabel('Count dbl-sided')
-            plt.subplot(313)
-            p3 = plt.plot(freqs_side, abs(FFT_side), "b") # plotting the positive fft spectrum
-            plt.xlabel('Frequency (Hz)')
-            plt.ylabel('Count single-sided')
-            plt.show()
-            #with open(piano_fpath, 'r') as f:
-            #    print(piano_fpath)
-            '''
-
-        
-        #print('Number of {} samples: {}'.format(set_type, len(self.samples)))
-
+    
         self.device = device
 
 
@@ -164,16 +117,6 @@ class PianoGuitar_SS(Dataset):
     def __getitem__(self, idx):
 
         piano_spectro, guitar_spectro = self.samples[idx]
-
-        # Define image normalizaiton/preprocessing
-        #preprocess = T.Compose([
-            #T.Resize((224, 224)),
-            #T.ToTensor(),
-            #T.Normalize(
-            #    mean=[0.485, 0.456, 0.406],
-            #    std=[0.229, 0.224, 0.225]
-            #)
-        #])
 
         return torch.tensor(piano_spectro, device=self.device), \
                torch.tensor(guitar_spectro, device=self.device)

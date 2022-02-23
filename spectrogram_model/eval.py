@@ -38,7 +38,7 @@ parser = argparse.ArgumentParser(description='Train model.')
 parser.add_argument('-data', dest='data', type=str, required=True, help='Path to the dataset')
 parser.add_argument('-model', dest='model', type=str, required=True, help='Path to trained model')
 parser.add_argument('-out', dest='out', type=str, required=True, help='Path to output predictions to')
-parser.add_argument('-f', dest='f', type=str, required=False, help='Path to single file to predict for')
+parser.add_argument('-f', dest='f', type=str, required=False, help='Path to single audio file (.wav) to predict for')
 args = parser.parse_args()
 
 # Load datasets
@@ -63,6 +63,7 @@ print('Model loaded!', args.model)
 
 # Define loss functions used
 mse_loss = nn.MSELoss()
+mae_loss = nn.L1Loss()
 
 # Reset statistics
 test_loss = 0
@@ -74,7 +75,7 @@ total = 0
 model.eval()
 sample_num = 0
 if not args.f:  # Not single file prediction
-    
+
     for samples_piano, samples_guitar in dataloader_test:
 
         with torch.no_grad():
@@ -92,8 +93,9 @@ if not args.f:  # Not single file prediction
             piano_transformed_shaped = torch.cat((piano_transformed_shaped, zeros2), dim=2)
 
             # Calculate loss
-            loss = mse_loss(piano_transformed_shaped, samples_guitar)
-                    
+            #loss = mse_loss(piano_transformed_shaped, samples_guitar)
+            loss = mae_loss(piano_transformed_shaped, samples_guitar)
+
             # Calculate accuracy
 
             # Update statistics
@@ -108,9 +110,9 @@ if not args.f:  # Not single file prediction
                 audio_reconstructed_input =librosa.griffinlim(samples_piano[k,0])
                 audio_reconstructed_model = librosa.griffinlim(piano_transformed_shaped[k,0])
                 audio_reconstructed_tgt = librosa.griffinlim(samples_guitar[k,0])
-                sf.write(os.path.join(args.out, 'input' + str(sample_num) + '.wav'), audio_reconstructed_input, sample_rate, 'PCM_24')
-                sf.write(os.path.join(args.out, 'pred' + str(sample_num) + '.wav'), audio_reconstructed_model, sample_rate, 'PCM_24')
-                sf.write(os.path.join(args.out, 'tgt' + str(sample_num) + '.wav'), audio_reconstructed_tgt, sample_rate, 'PCM_24')
+                sf.write(os.path.join(args.out, str(sample_num) + '_input' + '.wav'), audio_reconstructed_input, sample_rate, 'PCM_24')
+                sf.write(os.path.join(args.out, str(sample_num) + '_pred' + '.wav'), audio_reconstructed_model, sample_rate, 'PCM_24')
+                sf.write(os.path.join(args.out, str(sample_num) + '_tgt' + '.wav'), audio_reconstructed_tgt, sample_rate, 'PCM_24')
                 sample_num += 1
 
     # Show statistics on test set
