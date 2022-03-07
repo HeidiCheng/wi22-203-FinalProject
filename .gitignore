@@ -1,2 +1,4 @@
 # saved checkpoint
 *.pt
+
+.DS_Store
