@@ -1,6 +1,6 @@
 # Code for evaluating timbre transfer using waveform as input
 # Run using the following:
-#   python eval.py -data <dataset path> -model <trained_model path> -out <output path> -f <testing audio file path>
+#   python eval_rnn.py -data <dataset path> -model <trained_model path> -out <output path> -f <testing audio file path>
 
 
 import torch
@@ -8,14 +8,14 @@ import torchaudio
 import torchaudio.transforms as T
 import torch.nn as nn
 import argparse
-import model
+import model_rnn as model
 import numpy as np
 import soundfile as sf
 import random
 import os
 
 from torch.utils.data import DataLoader
-from data import PianoToGuitar
+from data_rnn import PianoToGuitar
 
 # Set seed for reproducibility
 torch.manual_seed(0)
@@ -24,7 +24,7 @@ np.random.seed(0)
 
 # Hyperparams (define hyperparams)
 batch_size = 10
-sample_rate = 22050
+sample_rate = 22016
 hyperparam_list = ['batch_size', 'sample_rate']
 hyperparams = {name:eval(name) for name in hyperparam_list}
 
@@ -121,12 +121,12 @@ else:
         piano_wav = torchaudio.load(piano_fpath)
  
         # Wav to tensor
-        resampler = T.Resample(piano_wav[1], 22050, dtype=piano_wav[0].dtype)
+        resampler = T.Resample(piano_wav[1], sample_rate, dtype=piano_wav[0].dtype)
         piano_wav_downsampled = resampler(piano_wav[0])
 
         mono_piano_wav = torch.mean(piano_wav_downsampled, dim=0).unsqueeze(0)
         mono_piano_wav = torch.reshape(mono_piano_wav, (1, 1, mono_piano_wav.shape[1])).to(device)
-        fname = args.f.split('/')[-1]
+        fname = args.f.split('\\')[-1]
 
         # Forward pass
         piano_transformed = model(mono_piano_wav)

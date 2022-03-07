@@ -14,6 +14,7 @@ import random
 import librosa
 import soundfile as sf
 import os
+import tqdm
 
 from torch.utils.data import DataLoader
 from data import PianoGuitar_SS
@@ -75,8 +76,7 @@ total = 0
 model.eval()
 sample_num = 0
 if not args.f:  # Not single file prediction
-
-    for samples_piano, samples_guitar in dataloader_test:
+    for samples_piano, samples_guitar in tqdm(dataloader_test):
 
         with torch.no_grad():
 

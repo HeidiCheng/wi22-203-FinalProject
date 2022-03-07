@@ -54,11 +54,6 @@ class WavNet(torch.nn.Module):
             nn.BatchNorm1d(256),
             nn.LeakyReLU(0.2, inplace=True)
         )
-        self.t5 = nn.Sequential(
-            nn.Conv1d(256, 256, kernel_size=3, padding=16, dilation=16),
-            nn.BatchNorm1d(256),
-            nn.LeakyReLU(0.2, inplace=True)
-        )
 
         #Decoding/Upsampling deconv blocks(4)
         self.d1 = nn.Sequential(
@@ -100,7 +95,6 @@ class WavNet(torch.nn.Module):
         x = self.t2(x)
         x = self.t3(x)
         x = self.t4(x)
-        x = self.t5(x)
 
         # Convolutional decoder
         x = self.d1(x)

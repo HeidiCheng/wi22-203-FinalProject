@@ -3,7 +3,7 @@
 # Run using the following:
 #   python train_wav.py -data <path> -l <trained_model>
 #
-# python train_wav.py -data "/Users/heidicheng/Desktop/heidi/Convex_Optimization/project/data"
+# python train_wav.py -data "F:\Datasets\TimbreTransfer"
 
 import torch
 import torch.nn as nn
