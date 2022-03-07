@@ -125,7 +125,7 @@ else:
         piano_fpath = args.f
         piano_wav = torchaudio.load(piano_fpath)
  
-        # Wav to tensor
+        # Wave to tensor
         resampler = T.Resample(piano_wav[1], sample_rate, dtype=piano_wav[0].dtype)
         piano_wav_downsampled = resampler(piano_wav[0])
 

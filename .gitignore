@@ -1,4 +1,5 @@
 # saved checkpoint
 *.pt
 
+# local machine info file
 .DS_Store

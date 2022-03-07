@@ -91,8 +91,6 @@ if not args.f:  # Not single file prediction
             #loss = mse_loss(piano_transformed_shaped, samples_guitar)
             loss = mae_loss(piano_transformed_shaped, samples_guitar)
 
-            # Calculate accuracy
-
             # Update statistics
             test_loss += loss.item()
             total += 10 #batch size
@@ -120,7 +118,7 @@ else:
         piano_fpath = args.f
         piano_wav = torchaudio.load(piano_fpath)
  
-        # Wav to tensor
+        # Wave to tensor
         resampler = T.Resample(piano_wav[1], sample_rate, dtype=piano_wav[0].dtype)
         piano_wav_downsampled = resampler(piano_wav[0])
 
