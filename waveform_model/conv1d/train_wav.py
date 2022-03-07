@@ -169,9 +169,9 @@ for epoch in range(epochs):
     piano_transformed_shaped = piano_transformed_shaped.cpu()
     samples_piano = samples_piano.cpu()
     samples_guitar = samples_guitar.cpu()
-    torchaudio.save(args.data + '/output/input.wav', samples_piano[0], sample_rate, format='wav')
-    torchaudio.save(args.data + '/output/pred.wav', piano_transformed_shaped[0], sample_rate, format='wav')
-    torchaudio.save(args.data + '/output/tgt.wav', samples_guitar[0], sample_rate, format='wav')
+    torchaudio.save(args.data + '/output/input_wave.wav', samples_piano[0], sample_rate, format='wav')
+    torchaudio.save(args.data + '/output/pred_wave.wav', piano_transformed_shaped[0], sample_rate, format='wav')
+    torchaudio.save(args.data + '/output/tgt_wave.wav', samples_guitar[0], sample_rate, format='wav')
 
 
 

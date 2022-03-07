@@ -81,7 +81,7 @@ if args.load:
 def save_model():
 
     # Save model
-    root_model_path = 'trained_models/latest_model_' + str(model_num) + '.pt'
+    root_model_path = 'trained_models/latest_rnn_model_' + str(model_num) + '.pt'
     model_dict = model.state_dict()
     state_dict = {'model': model_dict, 'optimizer': optimizer.state_dict()}
     torch.save(state_dict, root_model_path)
@@ -177,9 +177,9 @@ for epoch in range(epochs):
     if not os.path.isdir(dir_path)  :
         os.mkdir(dir_path)
         
-    torchaudio.save(os.path.join(dir_path, 'input.wav'), samples_piano[0], sample_rate, format='wav')
-    torchaudio.save(os.path.join(dir_path, 'pred.wav'), piano_transformed_shaped[0], sample_rate, format='wav')
-    torchaudio.save(os.path.join(dir_path, 'tgt.wav'), samples_guitar[0], sample_rate, format='wav')
+    torchaudio.save(os.path.join(dir_path, 'input_rnn.wav'), samples_piano[0], sample_rate, format='wav')
+    torchaudio.save(os.path.join(dir_path, 'pred_rnn.wav'), piano_transformed_shaped[0], sample_rate, format='wav')
+    torchaudio.save(os.path.join(dir_path, 'tgt_rnn.wav'), samples_guitar[0], sample_rate, format='wav')
 
 
 

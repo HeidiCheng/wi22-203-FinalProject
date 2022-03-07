@@ -100,9 +100,9 @@ if not args.f:  # Not single file prediction
             samples_piano = samples_piano.cpu()
             samples_guitar = samples_guitar.cpu()
             for k in range(batch_size):
-                torchaudio.save(os.path.join(args.out, str(sample_num) + '_input' + '.wav'), samples_piano[k], sample_rate, format='wav')
-                torchaudio.save(os.path.join(args.out, str(sample_num) + '_pred' + '.wav'), piano_transformed_shaped[k], sample_rate, format='wav')
-                torchaudio.save(os.path.join(args.out, str(sample_num) + '_tgt' + '.wav'),samples_guitar[k], sample_rate, firmat='wav')
+                torchaudio.save(os.path.join(args.out, str(sample_num) + '_input_rnn' + '.wav'), samples_piano[k], sample_rate, format='wav')
+                torchaudio.save(os.path.join(args.out, str(sample_num) + '_pred_rnn' + '.wav'), piano_transformed_shaped[k], sample_rate, format='wav')
+                torchaudio.save(os.path.join(args.out, str(sample_num) + '_tgt_rnn' + '.wav'),samples_guitar[k], sample_rate, firmat='wav')
                 sample_num += 1
 
     # Show statistics on test set
@@ -132,5 +132,5 @@ else:
         # Write outputs
         piano_transformed = piano_transformed.cpu()
         mono_piano_wav = mono_piano_wav.cpu()
-        torchaudio.save(os.path.join(args.out, 'input_' + fname), mono_piano_wav[0], sample_rate, format='wav')
-        torchaudio.save(os.path.join(args.out, 'pred_' + fname), piano_transformed[0], sample_rate, format='wav')
+        torchaudio.save(os.path.join(args.out, 'input_rnn_' + fname), mono_piano_wav[0], sample_rate, format='wav')
+        torchaudio.save(os.path.join(args.out, 'pred__rnn_' + fname), piano_transformed[0], sample_rate, format='wav')
