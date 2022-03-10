@@ -2,60 +2,46 @@ import torch
 import torch.nn as nn
 
 class WavRNN(torch.nn.Module):
-    def __init__(self, input_size, hidden_size):
+    def __init__(self, input_size, hidden_size, embedding_size):
         super(WavRNN, self).__init__()
 
         self.input_size = input_size
         self.hidden_size = hidden_size
-
+        self.embedding_size = embedding_size
+        
         # Encoder
+
         self.e1 = nn.LSTM(
             input_size=self.input_size, 
             hidden_size =self.input_size, 
-            num_layers=1, 
+            num_layers=2, 
             batch_first=True
         )
+
         self.e2 = nn.LSTM(
             input_size=self.input_size, 
             hidden_size =self.hidden_size, 
-            num_layers=1, 
+            num_layers=2, 
             batch_first=True
         )
-        
-        # Transformation
-        self.t1 = nn.Sequential(
-            nn.Conv1d(258, 258, kernel_size=3, padding=1),
-            nn.BatchNorm1d(258),
-            nn.LeakyReLU(0.2, inplace=True)
-        )
-        self.t2 = nn.Sequential(
-            nn.Conv1d(258, 258, kernel_size=3, padding=2, dilation=2),
-            nn.BatchNorm1d(258),
-            nn.LeakyReLU(0.2, inplace=True)
-        )
-        self.t3 = nn.Sequential(
-            nn.Conv1d(258, 258, kernel_size=3, padding=4, dilation=4),
-            nn.BatchNorm1d(258),
-            nn.LeakyReLU(0.2, inplace=True)
-        )
-        self.t4 = nn.Sequential(
-            nn.Conv1d(258, 258, kernel_size=3, padding=8, dilation=8),
-            nn.BatchNorm1d(258),
-            nn.LeakyReLU(0.2, inplace=True)
-        )
+
+        # Linear Transformation
+        self.l1 = nn.Linear(256, 256)
+
 
         # Decoder 
-        self.d1 = nn.LSTM(
+
+        self.d1 =nn.LSTM (
             input_size=self.hidden_size, 
-            hidden_size =self.input_size, 
-            num_layers=1, 
+            hidden_size=self.input_size, 
+            num_layers=2, 
             batch_first=True
         )
 
-        self.d2 =nn.LSTM (
+        self.d2 = nn.LSTM(
             input_size=self.input_size, 
-            hidden_size=self.input_size, 
-            num_layers=1, 
+            hidden_size =self.input_size, 
+            num_layers=2, 
             batch_first=True
         )
 
@@ -68,12 +54,9 @@ class WavRNN(torch.nn.Module):
         # LSTM encoder
         x, hc1 = self.e1(x)
         x, hc1 = self.e2(x)
-
-        # Convolutional transformer
-        x = self.t1(x)
-        x = self.t2(x)
-        x = self.t3(x)
-        #x = self.t4(x)
+      
+        # Linear transformer
+        x = self.l1(x)
 
         # LSTM decoder
         x, hc2 = self.d1(x)

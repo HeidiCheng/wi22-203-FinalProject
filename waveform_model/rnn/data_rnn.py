@@ -34,13 +34,13 @@ class PianoToGuitar(Dataset):
             piano_wav = torchaudio.load(piano_fpath)
             guitar_wav = torchaudio.load(guitar_fpath)
 
-            resampler = T.Resample(piano_wav[1], 22016, dtype=piano_wav[0].dtype)
+            #resampler = T.Resample(piano_wav[1], 22050, dtype=piano_wav[0].dtype)
 
-            piano_wav_downsampled = resampler(piano_wav[0])
-            guitar_wav_downsampled = resampler(guitar_wav[0])
+            #piano_wav_downsampled = resampler(piano_wav[0])
+            #guitar_wav_downsampled = resampler(guitar_wav[0])
 
-            mono_piano_wav = torch.mean(piano_wav_downsampled, dim=0).unsqueeze(0)
-            mono_guitar_wav = torch.mean(guitar_wav_downsampled, dim=0).unsqueeze(0)
+            mono_piano_wav = torch.mean(piano_wav, dim=0).unsqueeze(0)
+            mono_guitar_wav = torch.mean(guitar_wav, dim=0).unsqueeze(0)
 
             self.samples.append((mono_piano_wav, mono_guitar_wav))
 
