@@ -23,7 +23,7 @@ random.seed(0)
 np.random.seed(0)
 
 # Hyperparams (define hyperparams)
-epochs = 100
+epochs = 400
 learning_rate = 1e-4
 batch_size = 10
 sample_rate = 44100
