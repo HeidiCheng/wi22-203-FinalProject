@@ -8,13 +8,13 @@ class WavRNN(torch.nn.Module):
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.embedding_size = embedding_size
-        
+
         # Encoder
 
         self.e1 = nn.LSTM(
             input_size=self.input_size, 
             hidden_size =self.input_size, 
-            num_layers=2, 
+            num_layers=1, 
             batch_first=True
         )
 
@@ -34,7 +34,7 @@ class WavRNN(torch.nn.Module):
         self.d1 =nn.LSTM (
             input_size=self.hidden_size, 
             hidden_size=self.input_size, 
-            num_layers=2, 
+            num_layers=1, 
             batch_first=True
         )
 

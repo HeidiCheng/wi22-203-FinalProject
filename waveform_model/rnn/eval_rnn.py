@@ -24,7 +24,7 @@ np.random.seed(0)
 
 # Hyperparams (define hyperparams)
 batch_size = 10
-sample_rate = 22016
+sample_rate = 44100
 hyperparam_list = ['batch_size', 'sample_rate']
 hyperparams = {name:eval(name) for name in hyperparam_list}
 
