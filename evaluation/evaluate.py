@@ -1,6 +1,6 @@
 # Code for evaluating piano to guitar sound transfer
-# Name the files as below
-# pred_1.wav, tgt_1.wav, etc.
+# Name the files as below so they correspond exactly to test folder
+# 2_0102.wav, 3_042.wav, etc.
 #
 # python evaluate.py -pred <prediction_dir> -tgt <target_dir>
 
@@ -50,11 +50,9 @@ def read_directory(directory):
         # Get the file paths for the piano sample and corresponding guitar sample
         fpath = os.path.join(directory, fname)
         signal, sr = librosa.load(fpath, sr=SAMPLE_RATE)
-        print('Signal shape:', signal.shape)
 
         # Store file name and signal
-        waveform_num = fname.split('_')[-1]
-        waveforms[waveform_num] = signal
+        waveforms[fname] = signal
 
         '''
         # Get spectrogram using STFT (freq bins x num frames)
@@ -77,7 +75,7 @@ def read_directory(directory):
 predictions = read_directory(args.pred)
 
 # Load all target audio files
-targets = read_directory(args.target)
+targets = read_directory(args.tgt)
 
 # Calculate loss (MAE between predictions/targets) 
 # and other statistics/visualizations
@@ -90,8 +88,11 @@ for file_num, waveform in predictions.items():
     target_waveform = targets[file_num]
 
     # Calculate statistics
-    mae = np.sum(np.absolute((pred_waveform - target_waveform)))
+    #mae = np.sum(np.absolute((pred_waveform - target_waveform)))
+    mae = np.sum(np.absolute((pred_waveform - target_waveform[:len(pred_waveform)])))
 
     # Update overall statistics
     total_mae += mae
     num_samples += 1
+
+print('MAE:', total_mae / num_samples)
