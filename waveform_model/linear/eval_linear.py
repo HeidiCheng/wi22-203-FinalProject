@@ -1,21 +1,21 @@
 # Code for evaluating timbre transfer using waveform as input
 # Run using the following:
-#   python eval.py -data <dataset path> -model <trained_model path> -out <output path> -f <testing audio file path>
-
+#   python eval.py -data <path> -l <trained_model>
+#
+# python eval.py -data "/Users/heidicheng/Desktop/heidi/Convex_Optimization/project/data/"
 
 import torch
 import torchaudio
-import torchaudio.transforms as T
 import torch.nn as nn
 import argparse
-import model
+import model_linear as model
 import numpy as np
 import soundfile as sf
 import random
 import os
 
 from torch.utils.data import DataLoader
-from data import PianoToGuitar
+from data_linear import PianoToGuitar
 
 # Set seed for reproducibility
 torch.manual_seed(0)
@@ -24,7 +24,7 @@ np.random.seed(0)
 
 # Hyperparams (define hyperparams)
 batch_size = 10
-sample_rate = 22050
+sample_rate = 5000
 hyperparam_list = ['batch_size', 'sample_rate']
 hyperparams = {name:eval(name) for name in hyperparam_list}
 
@@ -33,7 +33,7 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu'
 print('Using',device)
 
 # Parse args
-parser = argparse.ArgumentParser(description='Test model.')
+parser = argparse.ArgumentParser(description='Train model.')
 parser.add_argument('-data', dest='data', type=str, required=True, help='Path to the dataset')
 parser.add_argument('-model', dest='model', type=str, required=True, help='Path to trained model')
 parser.add_argument('-out', dest='out', type=str, required=True, help='Path to output predictions to')
@@ -52,7 +52,7 @@ for k,v in hyperparams.items():
 dataloader_test = DataLoader(dataset_test, shuffle=True, batch_size=batch_size)
 
 # Create model
-model = model.WavNet()
+model = model.WavLinear()
 model.to(device)
 
 # Load trained model
@@ -75,7 +75,7 @@ model.eval()
 sample_num = 0
 if not args.f:  # Not single file prediction
 
-    for samples_piano, samples_guitar in dataloader_test:
+    for samples_piano, samples_guitar, fname in dataloader_test:
 
         with torch.no_grad():
 
@@ -91,6 +91,8 @@ if not args.f:  # Not single file prediction
             #loss = mse_loss(piano_transformed_shaped, samples_guitar)
             loss = mae_loss(piano_transformed_shaped, samples_guitar)
 
+            # Calculate accuracy
+
             # Update statistics
             test_loss += loss.item()
             total += 10 #batch size
@@ -100,9 +102,9 @@ if not args.f:  # Not single file prediction
             samples_piano = samples_piano.cpu()
             samples_guitar = samples_guitar.cpu()
             for k in range(batch_size):
-                torchaudio.save(os.path.join(args.out, str(sample_num) + '_input' + '.wav'), samples_piano[k], sample_rate, format='wav')
-                torchaudio.save(os.path.join(args.out, str(sample_num) + '_pred' + '.wav'), piano_transformed_shaped[k], sample_rate, format='wav')
-                torchaudio.save(os.path.join(args.out, str(sample_num) + '_tgt' + '.wav'),samples_guitar[k], sample_rate, firmat='wav')
+                #torchaudio.save(os.path.join(args.out, str(sample_num) + '_input' + '.wav'), samples_piano[k], sample_rate, format='wav')
+                torchaudio.save(os.path.join(args.out, fname[k] + '.wav'), piano_transformed_shaped[k], sample_rate, format='wav')
+                #torchaudio.save(os.path.join(args.out, str(sample_num) + '_tgt' + '.wav'),samples_guitar[k], sample_rate, firmat='wav')
                 sample_num += 1
 
     # Show statistics on test set
@@ -117,18 +119,19 @@ else:
         piano_wav = torchaudio.load(piano_fpath)
  
         # Wav to tensor
-        resampler = T.Resample(piano_wav[1], 22050, dtype=piano_wav[0].dtype)
-        piano_wav_downsampled = resampler(piano_wav[0])
-
-        mono_piano_wav = torch.mean(piano_wav_downsampled, dim=0).unsqueeze(0)
-        mono_piano_wav = torch.reshape(mono_piano_wav, (1, 1, mono_piano_wav.shape[1])).to(device)
+        samples_piano = piano_wav[0].to(device)
         fname = args.f.split('\\')[-1]
 
         # Forward pass
-        piano_transformed = model(mono_piano_wav)
+        piano_transformed = model(samples_piano)
+
+        # Pad zeros to tensor to match shape of target since
+        # dimensionality (height/width) was messed up slightly with convs
+        zeros = torch.zeros((batch_size, 1, samples_piano.shape[2] - piano_transformed.shape[2]), device=device)
+        piano_transformed_shaped = torch.cat((piano_transformed, zeros), dim=2)
 
         # Write outputs
-        piano_transformed = piano_transformed.cpu()
-        mono_piano_wav = mono_piano_wav.cpu()
-        torchaudio.save(os.path.join(args.out, 'input_' + fname), mono_piano_wav[0], sample_rate, format='wav')
-        torchaudio.save(os.path.join(args.out, 'pred_' + fname), piano_transformed[0], sample_rate, format='wav')
+        piano_transformed_shaped = piano_transformed_shaped.cpu()
+        samples_piano = samples_piano.cpu()
+        torchaudio.save(os.path.join(args.out, 'input_' + fname), samples_piano[0], sample_rate, 'wav')
+        torchaudio.save(os.path.join(args.out, 'pred_' + fname), piano_transformed_shaped[0], sample_rate, 'wav')

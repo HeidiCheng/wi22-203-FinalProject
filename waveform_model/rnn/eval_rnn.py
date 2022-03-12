@@ -88,7 +88,6 @@ if not args.f:  # Not single file prediction
             piano_transformed_shaped = torch.cat((piano_transformed, zeros), dim=2)
 
             # Calculate loss
-            #loss = mse_loss(piano_transformed_shaped, samples_guitar)
             loss = mae_loss(piano_transformed_shaped, samples_guitar)
 
             # Update statistics
@@ -107,8 +106,6 @@ if not args.f:  # Not single file prediction
 
     # Show statistics on test set
     print('Test Loss:',test_loss / (len(dataloader_test) / batch_size))
-    #print('Valid Class Accuracy:',(num_corr / total).item())
-    #print('Valid Attribute Accuracy:',(attr_acc / total))
 
 else:
     # Single file prediction

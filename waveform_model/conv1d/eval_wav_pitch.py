@@ -114,8 +114,6 @@ if not args.f:  # Not single file prediction
 
     # Show statistics on test set
     print('Test Loss:',test_loss / (len(dataloader_test) / batch_size))
-    #print('Valid Class Accuracy:',(num_corr / total).item())
-    #print('Valid Attribute Accuracy:',(attr_acc / total))
 
 else:
     # Single file prediction

@@ -11,7 +11,7 @@ class PianoToGuitar(Dataset):
 
     def __init__(self, directory, set_type, device):
         list_fname = os.path.join(directory, set_type + '_set.txt')
-        #list_fname = os.path.join(directory, 'valid_set.txt')
+        
         sample_fpaths = []
 
         with open(list_fname, 'r') as f:
@@ -33,11 +33,6 @@ class PianoToGuitar(Dataset):
              
             piano_wav = torchaudio.load(piano_fpath)
             guitar_wav = torchaudio.load(guitar_fpath)
-
-            #resampler = T.Resample(piano_wav[1], 22050, dtype=piano_wav[0].dtype)
-
-            #piano_wav_downsampled = resampler(piano_wav[0])
-            #guitar_wav_downsampled = resampler(guitar_wav[0])
 
             mono_piano_wav = torch.mean(piano_wav, dim=0).unsqueeze(0)
             mono_guitar_wav = torch.mean(guitar_wav, dim=0).unsqueeze(0)

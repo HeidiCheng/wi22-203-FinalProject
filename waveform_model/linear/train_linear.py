@@ -1,16 +1,15 @@
-# Code for training timbre transfer using waveform as input
+# Code for training timbre transfer using spectrogram as input
 # with *insert architecture/model* name
 # Run using the following:
-#   python train_wav_pitch.py -data <path> -l <trained_model>
+#   python train_wav.py -data <path> -l <trained_model>
 #
-# python train_wav_pitch.py -data "F:\Datasets\TimbreTransfer"
+# python train_wav.py -data "/Users/heidicheng/Desktop/heidi/Convex_Optimization/project/data"
 
-import os
 import torch
 import torch.nn as nn
 import torchaudio
 import argparse
-import model
+import model_linear as model
 import numpy as np
 import random
 from tqdm import tqdm
@@ -18,7 +17,7 @@ from tqdm import tqdm
 #import soundfile as sf
 
 from torch.utils.data import DataLoader
-from data import PianoToGuitar
+from data_linear import PianoToGuitar
 
 # Set seed for reproducibility
 torch.manual_seed(0)
@@ -26,11 +25,11 @@ random.seed(0)
 np.random.seed(0)
 
 # Hyperparams (define hyperparams)
-epochs = 100
+epochs = 50
 learning_rate = 1e-4
 batch_size = 10
 #sample_rate = 44100
-sample_rate = 22050
+sample_rate = 5000
 hyperparam_list = ['epochs', 'learning_rate', 'batch_size', 'sample_rate']
 hyperparams = {name:eval(name) for name in hyperparam_list}
 
@@ -61,7 +60,7 @@ dataloader_train = DataLoader(dataset_train, shuffle=True, batch_size=batch_size
 dataloader_valid = DataLoader(dataset_valid, shuffle=True, batch_size=batch_size)
 
 # Create model
-model = model.WavNet()
+model = model.WavLinear()
 model.to(device)
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 model_num = 1
@@ -81,7 +80,7 @@ if args.load:
 def save_model():
 
     # Save model
-    root_model_path = 'trained_models/latest_pitch_model_' + str(model_num) + '.pt'
+    root_model_path = '/content/drive/MyDrive/Colab Notebooks/trained_model/latest_model_' + str(model_num) + '.pt'
     model_dict = model.state_dict()
     state_dict = {'model': model_dict, 'optimizer': optimizer.state_dict()}
     torch.save(state_dict, root_model_path)
@@ -91,9 +90,10 @@ def save_model():
 # Define loss functions used
 mse_loss = nn.MSELoss()
 mae_loss = nn.L1Loss()
+ce_loss = nn.CrossEntropyLoss()
 
 # Go through training data
-for epoch in range(args.epochs):
+for epoch in range(epochs):
 
     # Reset statistics
     train_loss = 0
@@ -106,29 +106,24 @@ for epoch in range(args.epochs):
     model.train()
     for samples_piano, samples_guitar in tqdm(dataloader_train):
 
+        #print('Training shapes')
+        #print(samples_piano.shape, samples_guitar.shape)
+
         # Reset gradient
         optimizer.zero_grad()
 
         # Forward pass
         piano_transformed = model(samples_piano)
+        #piano_transformed = torch.reshape(piano_transformed, (piano_transformed.shape[0], 2, int(piano_transformed.shape[-1]/2)))
 
         # Pad zeros to tensor to match shape of target since
         # dimensionality (height/width) was messed up slightly with convs
         zeros = torch.zeros((batch_size, 1, samples_guitar.shape[2] - piano_transformed.shape[2]), device=device)
         piano_transformed_shaped = torch.cat((piano_transformed, zeros), dim=2)
 
-        # Add pitch detection to loss
-        guitar_pitch = torchaudio.functional.detect_pitch_frequency(samples_guitar, sample_rate, 0.1)
-        pred_pitch = torchaudio.functional.detect_pitch_frequency(piano_transformed_shaped, sample_rate, 0.1)
-
         # Calculate loss
         loss = mae_loss(piano_transformed_shaped, samples_guitar)
-        loss += 0.1*mae_loss(torch.log(guitar_pitch), torch.log(pred_pitch))
 
-           
-        
-        # Calculate accuracy
-        
         # Backward pass (update)
         loss.backward()
         optimizer.step()
@@ -139,8 +134,6 @@ for epoch in range(args.epochs):
 
     # Show current statistics on training
     print('Train Loss:',train_loss / (len(dataloader_train) / batch_size) )
-    #print('Train Class Accuracy:',(num_corr / total).item())
-    #print('Train Attribute Accuracy:',(attr_acc / total))
 
     # Reset statistics
     valid_loss = 0
@@ -156,22 +149,15 @@ for epoch in range(args.epochs):
 
             # Forward pass
             piano_transformed = model(samples_piano)
-            #piano_transformed = torch.reshape(piano_transformed, (piano_transformed.shape[0], 2, int(piano_transformed.shape[-1]/2)))
 
             # Pad zeros to tensor to match shape of target since
             # dimensionality (height/width) was messed up slightly with convs
             zeros = torch.zeros((batch_size, 1, samples_guitar.shape[2] - piano_transformed.shape[2]), device=device)
             piano_transformed_shaped = torch.cat((piano_transformed, zeros), dim=2)
 
-            # Add pitch detection to loss
-            guitar_pitch = torchaudio.functional.detect_pitch_frequency(samples_guitar, sample_rate, 0.1)
-            pred_pitch = torchaudio.functional.detect_pitch_frequency(piano_transformed_shaped, sample_rate, 0.1)
-
             # Calculate loss
             loss = mae_loss(piano_transformed_shaped, samples_guitar)   
-            loss += 0.1*mae_loss(torch.log(guitar_pitch), torch.log(pred_pitch))
 
-            # Calculate accuracy
 
             # Update statistics
             valid_loss += loss.item()
@@ -181,19 +167,15 @@ for epoch in range(args.epochs):
     piano_transformed_shaped = piano_transformed_shaped.cpu()
     samples_piano = samples_piano.cpu()
     samples_guitar = samples_guitar.cpu()
-
-    dir_path = os.path.join(args.data, '/output')
-    if not os.path.isdir(dir_path)  :
-        os.mkdir(dir_path)
-    torchaudio.save(os.path.join(dir_path, 'input_wpitch.wav'), samples_piano[0], sample_rate, format='wav')
-    torchaudio.save(os.path.join(dir_path, 'pred_wpitch.wav'), piano_transformed_shaped[0], sample_rate, format='wav')
-    torchaudio.save(os.path.join(dir_path, 'tgt_wpitch.wav'), samples_guitar[0], sample_rate, format='wav')
+    torchaudio.save(args.data + '/output/input.wav', samples_piano[0], sample_rate, format='wav')
+    torchaudio.save(args.data + '/output/pred.wav', piano_transformed_shaped[0], sample_rate, format='wav')
+    torchaudio.save(args.data + '/output/tgt.wav', samples_guitar[0], sample_rate, format='wav')
 
 
 
     # Show statistics on test set
     print('Valid Loss:',valid_loss / (len(dataloader_valid) / batch_size))
-    
+
     #if not args.test:
     if (epoch+1) % 10 == 0:
         save_model()
