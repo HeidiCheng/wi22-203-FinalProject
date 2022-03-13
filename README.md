@@ -6,13 +6,12 @@ Members: Sachinda Edirisooriya, Heidi Cheng, Payal Pandit, Ahmed Hussaini
 ### Chord with 2 notes
 * Input:
 
-
 https://user-images.githubusercontent.com/49812711/158054654-544c4d10-77bf-445e-8241-2ed4027650be.mp4
-
 
 * Target: 
 
 * Convex Optimization: 
+
 https://user-images.githubusercontent.com/49812711/158054395-05e1db90-df66-4347-9f47-e6c39360752f.mp4
 
 * Waveform Neural Network: 
