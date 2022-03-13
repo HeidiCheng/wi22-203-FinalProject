@@ -4,8 +4,11 @@ Members: Sachinda Edirisooriya, Heidi Cheng, Payal Pandit, Ahmed Hussaini
 
 ## Test Samples
 ### Chord with 2 notes
-* Input: 
+* Input:
+
+
 https://user-images.githubusercontent.com/49812711/158054654-544c4d10-77bf-445e-8241-2ed4027650be.mp4
+
 
 * Target: 
 
