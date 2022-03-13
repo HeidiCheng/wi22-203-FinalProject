@@ -45,10 +45,14 @@ https://user-images.githubusercontent.com/49812711/158054713-0fa96288-29d5-4e1d-
 
 
 * Waveform Neural Network: 
+
+
 https://user-images.githubusercontent.com/49812711/158054725-06dec231-1669-4b6e-aa0c-dbcf69de0a48.mp4
 
 
 * Spectrogram Neural Network: 
+
+
 https://user-images.githubusercontent.com/49812711/158054720-77551b41-8831-4152-816e-f2ce16f47f6d.mp4
 
 
@@ -114,7 +118,11 @@ https://user-images.githubusercontent.com/49812711/158054801-52efa6b5-875f-4214-
 
 
 * Convex Optimization: 
+
+
 https://user-images.githubusercontent.com/49812711/158054785-4c6b97fa-22b0-4c12-b822-d3d3bfec7654.mp4
+
+
 
 * Waveform Neural Network: 
 
