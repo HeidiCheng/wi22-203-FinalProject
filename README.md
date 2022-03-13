@@ -6,6 +6,10 @@ Members: Sachinda Edirisooriya, Heidi Cheng, Payal Pandit, Ahmed Hussaini
 ### Chord with 2 notes
 * Input:
 
+
+https://user-images.githubusercontent.com/49812711/158070712-f10cdeec-b320-428c-8cb4-376153f1d8bc.mp4
+
+
 * Target: 
 
 
@@ -32,6 +36,11 @@ https://user-images.githubusercontent.com/49812711/158054683-87a5274e-d09e-4f00-
 
 ### Chord with 3 notes
 * Input: 
+
+
+https://user-images.githubusercontent.com/49812711/158070776-a45db677-4a7a-45fb-9259-776ce9f12e29.mp4
+
+
 * Target: 
 
 
@@ -60,10 +69,14 @@ https://user-images.githubusercontent.com/49812711/158054720-77551b41-8831-4152-
 * Input: 
 
 
-https://user-images.githubusercontent.com/49812711/158054762-56d8f840-1468-43a1-92fe-d8956799352a.mp4
+https://user-images.githubusercontent.com/49812711/158070800-53d55e86-e216-4c9d-95ce-724bc74e7870.mp4
 
 
 * Target: 
+
+
+https://user-images.githubusercontent.com/49812711/158054762-56d8f840-1468-43a1-92fe-d8956799352a.mp4
+
 
 * Convex Optimization: 
 
@@ -85,6 +98,11 @@ https://user-images.githubusercontent.com/49812711/158054743-1dcd8fba-c276-4e4f-
 
 ### Chord with 5 notes
 * Input: 
+
+
+https://user-images.githubusercontent.com/49812711/158070814-3346ab47-8e22-4786-b652-9ab87be9a826.mp4
+
+
 * Target: 
 
 
@@ -111,6 +129,11 @@ https://user-images.githubusercontent.com/49812711/158054777-3cedb5d6-fa78-45f8-
 
 ### Chord with 6 notes
 * Input: 
+
+
+https://user-images.githubusercontent.com/49812711/158070832-3a81f181-4050-4765-b373-cf772676f915.mp4
+
+
 * Target: 
 
 
