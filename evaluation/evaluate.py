@@ -80,7 +80,11 @@ targets = read_directory(args.tgt)
 # Calculate loss (MAE between predictions/targets) 
 # and other statistics/visualizations
 total_mae = 0
+total_mse = 0
 num_samples = 0
+chord_num_mae = [0 for i in range(5)]
+chord_num_mse = [0 for i in range(5)]
+chord_num_total = [0 for i in range(5)]
 for file_num, waveform in predictions.items():
 
     # Get corresponding prediction/target waveforms
@@ -88,11 +92,21 @@ for file_num, waveform in predictions.items():
     target_waveform = targets[file_num]
 
     # Calculate statistics
-    #mae = np.sum(np.absolute((pred_waveform - target_waveform)))
     mae = np.sum(np.absolute((pred_waveform - target_waveform[:len(pred_waveform)])))
+    mse = np.sum(np.square((pred_waveform - target_waveform[:len(pred_waveform)])))
 
     # Update overall statistics
     total_mae += mae
+    total_mse += mse
     num_samples += 1
+    chord_num_mae[int(file_num[0])-2] += mae
+    chord_num_mse[int(file_num[0])-2] += mse
+    chord_num_total[int(file_num[0])-2] += 1
 
 print('MAE:', total_mae / num_samples)
+print('MSE:', total_mse / num_samples)
+
+print('\nError by Chord Size')
+for i in range(5):
+    print('Chord size {} : MSE = {}    MAE = {}'.format(
+        i+2, chord_num_mae[i] / chord_num_total[i], chord_num_mse[i] / chord_num_total[i]))
