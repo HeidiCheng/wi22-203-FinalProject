@@ -2,6 +2,10 @@
 
 Members: Sachinda Edirisooriya, Heidi Cheng, Payal Pandit, Ahmed Hussaini
 
+# Dataset
+
+To download dataset, please use this link: https://drive.google.com/drive/folders/1U4qTpISPxXRDmvPzeLxxsfhDvXjuXw4V?usp=sharing
+
 ## Test Samples
 ### Chord with 2 notes
 * Input:
